@@ -88,3 +88,26 @@ export default function Posts(){
 ```
 
 É possível ter uma **junção dos dois**, onde uma página renderizada pelo servidor (Server Component) possa ter componentes renderizados pelo cliente (Client Component) para ter reatividade.
+
+**Server Actions**
+
+Também é possível utilizar o conceito de *Server Actions*, onde dentro de uma página Server Component é possível utilizar uma função que será executada no lado do servidor e não do cliente, para isto basta passar a diretiva *'use server'*, exemplo:
+
+```js
+export default async function Posts(){
+    async function handleClickButton(){
+        'use server' // Diretiva
+        
+        // Este console log aparecerá apenas no servidor (não aparecerá no console do navegador)
+        console.log("CLICOUU, função executada pelo servidor.")
+    }
+
+    return(
+        <button className="m-2 p-2 bg-blue-800 text-white hover:cursor-pointer" onClick={handleClickButton}>
+            Botão com função executada pelo servidor
+        </button>
+    )
+}
+```
+
+Da mesma forma, é possível adicionar em uma página Client Component uma função que será renderizada pelo servidor com a mesma diretiva mencionada anteriormente.
