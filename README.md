@@ -111,3 +111,25 @@ export default async function Posts(){
 ```
 
 Da mesma forma, é possível adicionar em uma página Client Component uma função que será renderizada pelo servidor com a mesma diretiva mencionada anteriormente.
+
+#### **Rotas Dinâmicas**
+
+Para ter rotas dinâmicas, isto é, dado uma listagem de posts é necessário uma tela para visualizar um único post disponível. Isto deveria ser feito a partir do envio de parâmetros através da URL, onde seria enviado o Id do post, isto pode ser feito adicionando uma pasta com o nome do parâmetro/variável que será enviado pela URL, exemplo:
+
+>`app`
+>> `posts`
+>>> `[id]`
+>>>> page.tsx
+
+```js
+export default async function DetailPost({params} : {params: Promise<{id: string}>}){
+    const { id } = await params;
+
+    return (
+        <div>
+            <h1>Detalhes do Post: {id}</h1>
+            ...
+        </div>
+    )
+}
+```
