@@ -133,3 +133,123 @@ export default async function DetailPost({params} : {params: Promise<{id: string
     )
 }
 ```
+
+#### **Loading UI**
+
+Para adicionar uma tela que aparecerá enquanto a tela principal estiver sendo carregada, por exemplo, uma requisição a uma API, com o Next é possível criar um arquivo *loading.tsx* (necessário ter esse nome) na mesma pasta da página a ser renderizada (*page.tsx*), exemplo:
+
+```js
+export default function Loading(){
+    return (
+        <h1>
+            Carregando...
+        </h1>
+    )
+}
+```
+
+Também é possível adicionar o loading para componentes específicos e não para a página inteira, isto é, ter a página renderizada, porém em um componente específico dentro desta página que busca alguma informação dinamicamente pode-se colocar o componente *Suspense* com a propriedade *fallback* preenchida com algum componente que será exibido enquanto o componente principal (detalhe de post, por exemplo) é carregado:
+
+```js
+export default async function DetailPost({params} : {params: Promise<{id: string}>}){
+    const { id } = await params;
+
+    return (
+        <div>
+            <h1>
+                Detalhes do Post: {id}
+            </h1>
+
+            <Suspense fallback={<h1>Carregando...</h1>}>
+                <PostInfo id={id} />
+            </Suspense>
+        </div>
+    )
+}
+```
+
+#### **Cache e Revalidate**
+
+É possível armazenar consultas de uma API a partir do Fetch utilizando parâmetros como *cache* e *revalidate*. Por padrão o cache é configurado como *no-store*, para começar a armazenar os dados no cache basta utilizar o *force-cache*, exemplo:
+
+```js
+export default function Posts(){
+    const response = await fetch('https://dummyjson.com/posts', {
+        cache: 'force-cache', // Utiliza o cache do Fetch para armazenar o retorno da API
+        next: {
+            revalidate: 60 // Revalida o cache (puxa novamente os dados da API) em 60 segundos
+        }
+    })
+    const data: ResponseProps = await response.json()
+
+    return (
+        ...
+    )
+}
+```
+
+**Revalidate**
+
+Caso uma página Server Component for criada ela será renderizada apenas uma vez e, por exemplo, caso nessa página específica haja alguma operação dinâmica acontecendo só será renderizada apenas uma vez e mesmo que o usuário atualize a tela o conteúdo não será atualizado (pois não fará a operação dinâmica novamente, uma requisição, por exemplo). Para resolver isto, basta criar uma constante chamada *revalidate* e definir o valor em segundos que a página será atualizada, isto pode ser feito da seguinte forma:
+
+```js
+// Essa propriedade fará que a página seja atualizada a cada 60 segundos, ou seja, o número randômico será diferente a cada 60 segundos.
+export const revalidate = 60;
+
+export default function Home() {
+  // Caso apenas existir esse número (sem o revalidate), quando for realizado o build, essa tela só será renderizado uma única vez e o número não atualizará mesmo que a tela seja atualizada.
+  const randomNumber = Math.random() * 10;
+
+  return (
+    <div>
+      <h2>Número gerado: {randomNumber}</h2>
+    </div>
+  )
+}
+```
+
+Isto funcionaria para uma página 100% renderizada pelo servidor, porém se houver algum componente Client Component renderizando o conteúdo dinâmico também funcionaria da mesma forma.
+
+#### **Middlewares**
+
+É possível criar um middleware para validar por exemplo, se o usuário está logado para permitir/negar ir para uma página específica. É possível adicionar um middleware criando um arquivo *middleware.ts* (não é *tsx*, pois não é um componente) dentro da pasta *src*:
+
+```js
+import { NextRequest, NextResponse } from "next/server";
+
+export default function Middleware(request: NextRequest) {
+    const authenticated = false;
+
+    if (request.nextUrl.pathname.startsWith('/dashboard') && !authenticated){
+        return NextResponse.redirect(new URL('/', request.url)) // parâmetros: Url de redirecionamento, url base
+    }
+    
+    return NextResponse.next()
+}
+```
+
+Neste arquivo é possível realizar requisições http para validar se o usuário está logado a partir de um token JWT, por exemplo.
+
+#### **Route Handlers (API)**
+
+É possível criar API's completas dentro do projeto Next.js. Para isto, é necessário criar uma pasta chamada *api* dentro da *src*. Os nomes das pastas dentro da rota *api* será as url's dos endpoints, exemplo:
+
+>`app`
+>> `api`
+>>> `info`
+>>>> route.ts
+
+Neste caso, o endpoint será acessado através da rota *http://localhost:3000/api/info*.
+
+É necessário que os nomes das funções sejam nomes de métodos http (GET, POST, PUT, DELETE, PATCH, etc) com todas as letras maíusculas, exemplo:
+
+```js
+import { NextResponse } from "next/server";
+
+export async function GET() {
+    return NextResponse.json({
+        name: "WolFros",
+        email: "wolfros@email.com"
+    })
+}
+```
