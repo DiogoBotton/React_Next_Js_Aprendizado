@@ -1,3 +1,4 @@
+import { WidgetRenderer } from "@/components/WCRenderer";
 import { Metadata } from "next"
 
 // O openGraph cria uma visualização básica sobre a página
@@ -14,10 +15,18 @@ export default function Home() {
   // Caso apenas existir esse número, quando for realizado o build, essa tela só será renderizado uma única vez e o número não atualizará mesmo que a tela seja atualizada.
   const randomNumber = Math.random() * 10;
 
+  const widgets = [
+    {
+      src: "https://diogobotton.github.io/POC_WebComponents/hello-world.js", tag: "hello-world"
+    }
+  ]
+
   return (
     <div>
       <h1>HOME</h1>
       <h2>Número gerado: {randomNumber}</h2>
+
+      <WidgetRenderer widgets={widgets}/>
     </div>
   )
 }
